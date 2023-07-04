@@ -4,6 +4,12 @@ import HomeView from "../views/HomeView.vue";
 const routes = [
   {
     path: "/",
+    name: "form",
+    component: () =>
+      import(/* webpackChunkName: "form" */ "@/components/PInputForm.vue"),
+  },
+  {
+    path: "/home",
     name: "home",
     component: HomeView,
   },
