@@ -3,13 +3,19 @@ import HomeView from "../views/HomeView.vue";
 
 const routes = [
   {
-    path: "/",
+    path: "/form",
     name: "form",
     component: () =>
       import(/* webpackChunkName: "form" */ "@/components/PInputForm.vue"),
   },
   {
-    path: "/home",
+    path: "/camera",
+    name: "camera",
+    component: () =>
+      import(/* webpackChunkName: "camera" */ "@/components/PCamera.vue"),
+  },
+  {
+    path: "/",
     name: "home",
     component: HomeView,
   },
@@ -35,6 +41,12 @@ const BASE_URL = (() => {
 const router = createRouter({
   history: createWebHistory(BASE_URL),
   routes,
+});
+
+router.beforeEach((to, from, next) => {
+  console.log("beforeEach to", to);
+  console.log("beforeEach from", from);
+  next();
 });
 
 export default router;
