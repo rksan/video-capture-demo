@@ -31,7 +31,11 @@ const setup = () => {
 
   onMounted(() => {
     const camera = (refCamera.value.instance = generator(".viewport", {
-      video: { width: 1200, height: 720 },
+      video: {
+        width: { min: 160, ideal: 1200, max: 10240 },
+        height: { min: 120, ideal: 720, max: 4320 },
+        facingMode: "environment",
+      },
     }));
 
     camera.init().then((ins) => {
