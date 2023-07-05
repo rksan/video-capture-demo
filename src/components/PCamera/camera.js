@@ -76,10 +76,12 @@ module.exports = (
     stream.getVideoTracks().forEach((track) => {
       media.videoTrack = track;
 
-      const constraints = track.getConstraints();
+      const settings = track.getSettings();
 
-      canvas.width = constraints.width;
-      canvas.height = constraints.height;
+      console.log("constraints", settings);
+
+      canvas.width = settings.width;
+      canvas.height = settings.height;
     });
 
     return stream;

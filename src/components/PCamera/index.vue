@@ -4,7 +4,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import { onMounted, ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 import generator from "./camera";
 
 const setup = () => {
@@ -41,6 +41,12 @@ const setup = () => {
     camera.init().then((ins) => {
       ins.start();
     });
+  });
+
+  onUnmounted(() => {
+    const camera = refCamera.value;
+
+    if (camera) camera.stop();
   });
 
   return {
