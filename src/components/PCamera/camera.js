@@ -65,26 +65,28 @@ module.exports = (
   };
 
   const setupMedia = async (constraints) => {
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
-    media.stream = stream;
+      media.stream = stream;
 
-    const { video, canvas } = dom;
+      const { video, canvas } = dom;
 
-    video.srcObject = stream;
+      video.srcObject = stream;
 
-    stream.getVideoTracks().forEach((track) => {
-      media.videoTrack = track;
+      stream.getVideoTracks().forEach((track) => {
+        media.videoTrack = track;
 
-      const settings = track.getSettings();
+        const settings = track.getSettings();
 
-      console.log("constraints", settings);
+        canvas.width = settings.width;
+        canvas.height = settings.height;
+      });
 
-      canvas.width = settings.width;
-      canvas.height = settings.height;
-    });
-
-    return stream;
+      return stream;
+    } catch (err) {
+      return Promise.reject(err);
+    }
   };
 
   const drawCanvas = (video, canvas) => {
@@ -101,21 +103,25 @@ module.exports = (
   };
 
   const start = async () => {
-    let { stream } = media;
+    try {
+      let { stream } = media;
 
-    if (!stream) {
-      stream = await setupMedia(constraints);
+      if (!stream) {
+        stream = await setupMedia(constraints);
+      }
+
+      if (stream) {
+        ui.pause = false;
+        stream.getVideoTracks().forEach((track) => {
+          track.enabled = true;
+        });
+        /* window. */ requestAnimationFrame(progress);
+      }
+
+      return Promise.resolve(media.stream);
+    } catch (err) {
+      return Promise.reject(err);
     }
-
-    if (stream) {
-      ui.pause = false;
-      stream.getVideoTracks().forEach((track) => {
-        track.enabled = true;
-      });
-      /* window. */ requestAnimationFrame(progress);
-    }
-
-    return media.stream;
   };
 
   const pause = async () => {
@@ -161,6 +167,10 @@ module.exports = (
   };
 
   return {
+    get DOM() {
+      return dom;
+    },
+
     async init() {
       return new Promise((resolve) => {
         initDom(target);

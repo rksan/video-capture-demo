@@ -6,6 +6,13 @@ module.exports = defineConfig({
   assetsDir: "./",
   publicPath: "./",
   transpileDependencies: true,
+  configureWebpack: {
+    devServer: {
+      historyApiFallback: {
+        rewrites: [{ from: /\*/, to: "/index.html" }],
+      },
+    },
+  },
   chainWebpack: (config) =>
     config.plugin("feature-flags").use(webpack.DefinePlugin, [
       {

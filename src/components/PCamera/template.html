@@ -1,12 +1,55 @@
-<main class="wapper">
-  <section class="viewport">
-    <canvas></canvas>
-    <video autoplay playsinline></video>
-  </section>
+<div class="wapper">
+  <main class="main">
+    <section class="camera camera-full">
+      <div class="viewport">
+        <canvas></canvas>
+        <video autoplay playsinline></video>
+      </div>
+    </section>
 
-  <section class="fixed-bottom">
-    <button @click="start">start</button>
-    <button @click="pause">pause</button>
-    <button @click="stop">stop</button>
-  </section>
-</main>
+    <section class="cover" :class="ui.loaded ? '' : 'cover-loading'">
+      <div
+        class="position-relative"
+        style="width: 100%; height: 100%"
+        v-show="!ui.loaded"
+      >
+        <div class="position-absolute top-50 start-50 translate-middle">
+          <div
+            class="spinner-border"
+            role="status"
+            style="width: 3rem; height: 3rem"
+          >
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p>カメラの権限を確認中...</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="fixed-top d-flex flex-row">
+      <slot name="close-button">
+        <button class="btn btn-dark" @click="close">
+          <i class="bi bi-x-square"></i>
+        </button>
+      </slot>
+    </section>
+
+    <section class="fixed-bottom">
+      <slot name="start-button">
+        <button class="btn btn-primary" @click="start">
+          <i class="bi bi-caret-right-square"></i>
+        </button>
+      </slot>
+      <slot name="pause-button">
+        <button class="btn btn-warning" @click="pause">
+          <i class="bi bi-pause-circle"></i>
+        </button>
+      </slot>
+      <slot name="stop-button">
+        <button class="btn btn-danger" @click="stop">
+          <i class="bi bi-stop-fill"></i>
+        </button>
+      </slot>
+    </section>
+  </main>
+</div>

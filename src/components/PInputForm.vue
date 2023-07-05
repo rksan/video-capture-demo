@@ -1,89 +1,100 @@
 <template>
-  <form>
-    <!-- video canvas -->
-    <div>
+  <div class="container-fluid">
+    <form>
+      <!-- video canvas -->
       <div>
-        <button class="btn btn-secondary" @click="doClickCamera">Camera</button>
+        <div>
+          <button class="btn btn-secondary" @click="doClickCamera">
+            Camera
+          </button>
+        </div>
       </div>
-      <div>
-        <canvas></canvas>
-      </div>
-    </div>
 
-    <!-- capture image -->
-    <div class="mb-3">
-      <div class="mb-3">
-        <button class="btn btn-primary" @click="doClickCapture">capture</button>
-      </div>
-      <div class="mb-3">
-        <input
-          type="file"
-          name="input-capture"
-          accept="image/*"
-          capture
-          @change="doChangeCapture"
-        />
-      </div>
-    </div>
+      <PCameraVue
+        ref="refCamera"
+        v-show="ui.show"
+        @init="emitedInit"
+        @pause="emitedPause"
+        @stop="emitedStop"
+      >
+        <template v-slot:close-button>
+          <button class="btn btn-dark btn-lg" @click="doClickClose">
+            <i class="bi bi-arrow-left fs-1"></i>
+          </button>
+        </template>
 
-    <!-- select image -->
-    <div class="mb-3">
-      <div class="mb-3">
-        <button class="btn btn-success" @click="doClickInput">Select</button>
-      </div>
-      <div class="mb-3">
-        <input type="file" name="input-image" accept="image/*" />
-      </div>
-    </div>
+        <template v-slot:start-button><span /></template>
 
-    <div>
-      <textarea id="log"></textarea>
-    </div>
-  </form>
+        <template v-slot:pause-button>
+          <button class="btn btn-danger btn-lg" @click="doClickPause">
+            <i class="bi bi-stop-circle fs-1"></i>
+          </button>
+        </template>
+
+        <template v-slot:stop-button><span /></template>
+      </PCameraVue>
+    </form>
+  </div>
 </template>
 
 <script>
 import { defineComponent } from "vue";
-import { useRouter } from "vue-router";
+import { ref } from "vue";
+import PCameraVue from "./PCamera";
 
-const setup = () => {
-  const $router = useRouter();
+const setup = function () {
+  const refCamera = ref();
+
+  const ui = ref({
+    show: false,
+    camera: null,
+  });
+
+  const emitedInit = (args) => {
+    ui.value.camera = args.data;
+  };
+
+  const emitedPause = () => {};
+
+  const emitedStop = () => {
+    ui.value.show = false;
+  };
+
+  const doClickClose = (event) => {
+    if (event) event.preventDefault();
+    ui.value.show = false;
+    refCamera.value.stop();
+  };
+
+  const doClickPause = (event) => {
+    if (event) event.preventDefault();
+
+    refCamera.value.stop();
+  };
 
   const doClickCamera = (event) => {
     if (event) event.preventDefault();
-    $router.push({ path: "/camera" });
-  };
 
-  const outputConsole = (text) => {
-    const textarea = document.querySelector("#log");
-
-    textarea.value = text.toString
-      ? text.toString()
-      : text.toJSON
-      ? JSON.stringify(text.toJSON())
-      : text;
-  };
-
-  const doClickCapture = (event) => {
-    if (event) {
-      event.preventDefault();
-    }
-  };
-
-  const doChangeCapture = (event) => {
-    outputConsole(event.type);
+    ui.value.show = true;
+    refCamera.value.start();
   };
 
   return {
+    refCamera,
+    ui,
+
+    emitedInit,
+    emitedPause,
+    emitedStop,
+    doClickClose,
+    doClickPause,
     doClickCamera,
-    doClickCapture,
-    doChangeCapture,
-    outputConsole,
   };
 };
 
 export default defineComponent({
   name: "p-input-form",
+  components: { PCameraVue },
   setup,
 });
 </script>

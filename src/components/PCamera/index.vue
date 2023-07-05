@@ -4,29 +4,68 @@
 
 <script>
 import { defineComponent } from "vue";
-import { onMounted, onUnmounted, ref } from "vue";
+import { onMounted, onUnmounted, ref, reactive } from "vue";
+import { useRouter } from "vue-router";
 import generator from "./camera";
 
-const setup = () => {
+const setup = (props, context) => {
+  const $router = useRouter();
+
   const refCamera = ref({
     instance: null,
   });
 
-  const start = () => {
-    const camera = refCamera.value.instance;
+  const ui = reactive({
+    loaded: false,
+    error: "",
+  });
 
-    camera.start();
+  const close = (event) => {
+    if (event) event.preventDefault();
+
+    $router.back();
   };
 
-  const pause = () => {
+  const start = (event) => {
+    if (event) event.preventDefault();
+
     const camera = refCamera.value.instance;
 
-    camera.pause();
+    return camera
+      .start()
+      .then((stream) => {
+        console.log("start");
+        ui.loaded = true;
+        context.emit("start", { data: camera });
+        return stream;
+      })
+      .catch((err) => {
+        console.error(err);
+        ui.error = err;
+        return err;
+      });
   };
 
-  const stop = () => {
+  const pause = (event) => {
+    if (event) event.preventDefault();
     const camera = refCamera.value.instance;
-    camera.stop();
+    return camera.pause().then((stream) => {
+      context.emit("pause", { data: camera });
+      return stream;
+    });
+  };
+
+  const stop = (event) => {
+    if (event) event.preventDefault();
+
+    ui.loaded = false;
+
+    const camera = refCamera.value.instance;
+
+    return camera.stop().then((stream) => {
+      context.emit("stop", { data: camera });
+      return stream;
+    });
   };
 
   onMounted(() => {
@@ -38,18 +77,18 @@ const setup = () => {
       },
     }));
 
-    camera.init().then((ins) => {
-      ins.start();
+    camera.init().then(() => {
+      context.emit("init", { data: camera });
     });
   });
 
   onUnmounted(() => {
-    const camera = refCamera.value;
-
-    if (camera) camera.stop();
+    stop();
   });
 
   return {
+    ui,
+    close,
     start,
     pause,
     stop,
