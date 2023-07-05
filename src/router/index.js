@@ -12,7 +12,7 @@ const routes = [
     path: "/camera",
     name: "camera",
     component: () =>
-      import(/* webpackChunkName: "camera" */ "@/components/PCamera.vue"),
+      import(/* webpackChunkName: "camera" */ "@/components/PCamera"),
   },
   {
     path: "/",

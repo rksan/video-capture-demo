@@ -1,0 +1,54 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+.wapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+}
+
+.viewport {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: 100%;
+  aspect-ratio: 16/9;
+}
+
+/* height > width */
+@media (orientation: portrait) {
+  .viewport {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 9/16;
+  }
+}
+
+.viewport>>>video,
+.viewport>>>canvas {
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  
+}
+
+.viewport>>>video {
+  visibility: hidden;
+  z-index: 1;
+}
+
+.viewport>>>canvas {
+  z-index: 2;
+}
