@@ -125,11 +125,12 @@ module.exports = (
 
   const applyConstrains = () => {
     if (!media.constraints.apply) {
-      media.constraints.apply = Object.assign({}, media.constraints.init);
+      media.constraints.apply = structuredClone(media.constraints.init);
     }
 
     return media.constraints.apply;
   };
+
   /**
    *
    * @param {Number} aspectRatio
@@ -195,6 +196,8 @@ module.exports = (
       if (!stream) {
         stream = await setupMedia(media.constraints.init);
       }
+
+      media.constraints.apply = null;
 
       if (stream) {
         ui.pause = false;

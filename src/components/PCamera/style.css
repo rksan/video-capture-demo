@@ -91,3 +91,11 @@
 .cover-loading{
   z-index: 3;
 }
+
+.camera-menu{
+  background-color: transparent;
+}
+
+.camera-menu >>> .dropdown-menu{
+  background-color: transparent;
+}
