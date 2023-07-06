@@ -78,8 +78,6 @@ const setup = function () {
     const img = refImg.value;
 
     component.pause().then(() => {
-      /* const imageURL = component.snap();
-      img.src = imageURL; */
       const camera = ui.camera;
 
       camera

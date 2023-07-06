@@ -111,8 +111,6 @@ module.exports = (
 
         const settings = track.getSettings();
 
-        console.log(settings);
-
         setupDom(settings);
       });
 
@@ -128,7 +126,7 @@ module.exports = (
    * @returns
    */
   const applyAspectRatio = async (aspectRatio) => {
-    const constraints = Object.assign(media.constraints, {
+    const constraints = Object.assign(Object.assign({}, media.constraints), {
       video: {
         aspectRatio,
       },
@@ -154,11 +152,14 @@ module.exports = (
           facingMode === "user";
         }
 
-        const constraints = Object.assign(media.constraints, {
-          video: {
-            facingMode,
-          },
-        });
+        const constraints = Object.assign(
+          Object.assign({}, media.constraints),
+          {
+            video: {
+              facingMode,
+            },
+          }
+        );
 
         return await setupMedia(constraints);
       }
