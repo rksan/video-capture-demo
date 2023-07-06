@@ -84,13 +84,13 @@ const setup = (props, context) => {
 
     switch (aspect) {
       case "16/9":
-        camera.applyAspectRatio({ exact: 16 / 9 });
+        camera.applyAspectRatio(16 / 9);
         break;
       case "4/3":
-        camera.applyAspectRatio({ exact: 4 / 3 });
+        camera.applyAspectRatio(4 / 3);
         break;
       case "1/1":
-        camera.applyAspectRatio({ exact: 1 / 1 });
+        camera.applyAspectRatio(1 / 1);
         break;
       default:
         break;

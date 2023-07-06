@@ -84,7 +84,10 @@ module.exports = (
   };
 
   const media = {
-    constraints: Object.assign(DEFAULT.CONSTRAINS, constraints),
+    constraints: {
+      init: Object.assign(DEFAULT.CONSTRAINS, constraints),
+      apply: null,
+    },
     /** @type {MediaStream} */
     stream: null,
     /** @type {} */
@@ -120,17 +123,24 @@ module.exports = (
     }
   };
 
+  const applyConstrains = () => {
+    if (!media.constraints.apply) {
+      media.constraints.apply = Object.assign({}, media.constraints.init);
+    }
+
+    return media.constraints.apply;
+  };
   /**
    *
-   * @param {ConstrainDOMString} aspectRatio
+   * @param {Number} aspectRatio
    * @returns
    */
   const applyAspectRatio = async (aspectRatio) => {
-    const constraints = Object.assign(Object.assign({}, media.constraints), {
-      video: {
-        aspectRatio,
-      },
-    });
+    const constraints = applyConstrains();
+
+    constraints.video.aspectRatio = { exact: aspectRatio };
+
+    await stop();
 
     return await setupMedia(constraints);
   };
@@ -152,14 +162,11 @@ module.exports = (
           facingMode === "user";
         }
 
-        const constraints = Object.assign(
-          Object.assign({}, media.constraints),
-          {
-            video: {
-              facingMode,
-            },
-          }
-        );
+        const constraints = applyConstrains();
+
+        constraints.video.facingMode = { ideal: facingMode };
+
+        await stop();
 
         return await setupMedia(constraints);
       }
@@ -186,7 +193,7 @@ module.exports = (
       let { stream } = media;
 
       if (!stream) {
-        stream = await setupMedia(media.constraints);
+        stream = await setupMedia(media.constraints.init);
       }
 
       if (stream) {
