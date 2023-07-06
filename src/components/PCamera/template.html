@@ -26,13 +26,69 @@
       </div>
     </section>
 
-    <section class="fixed-top d-flex flex-row">
-      <slot name="close-button">
-        <button class="btn btn-dark" @click="close">
-          <i class="bi bi-x-square"></i>
-        </button>
-      </slot>
-    </section>
+    <!-- camera menu -->
+    <nav class="fixed-top m-0 p-0" style="background-color: transparent">
+      <ul class="nav display-1">
+        <!-- close button-->
+        <li class="nav-item">
+          <slot name="close-button">
+            <button class="nav-link" @click="close">
+              <i class="bi bi-x-square"></i>
+            </button>
+          </slot>
+        </li>
+
+        <!-- aspect ratio-->
+        <li class="nav-item dropdown">
+          <button
+            class="nav-link dropdown-toggle"
+            data-bs-toggle="dropdown"
+            role="button"
+            aria-expanded="false"
+          >
+            <i class="bi bi-aspect-ratio"></i>
+          </button>
+          <ul class="dropdown-menu">
+            <li>
+              <button
+                class="dropdown-item"
+                data-aspect-ratio="16/9"
+                @click="doClickChangeAspectRatio"
+              >
+                <i class="bi bi-aspect-ratio"></i> 16/9
+              </button>
+            </li>
+            <li>
+              <button
+                class="dropdown-item"
+                data-aspect-ratio="4/3"
+                @click="doClickChangeAspectRatio"
+              >
+                <i class="bi bi-aspect-ratio"></i> 4/3
+              </button>
+            </li>
+            <li>
+              <button
+                class="dropdown-item"
+                data-aspect-ratio="1/1"
+                @click="doClickChangeAspectRatio"
+              >
+                <i class="bi bi-aspect-ratio"></i> 1/1
+              </button>
+            </li>
+          </ul>
+        </li>
+
+        <li class="nav-item">
+          <button class="nav-link" type="button" @click="doClickFacingMode">
+            <i class="bi bi-phone-flip"></i>
+          </button>
+        </li>
+      </ul>
+
+      <div></div>
+      <div></div>
+    </nav>
 
     <section class="fixed-bottom">
       <slot name="start-button">

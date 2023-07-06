@@ -8,6 +8,9 @@
             Camera
           </button>
         </div>
+        <div>
+          <img ref="refImg" />
+        </div>
       </div>
 
       <PCameraVue
@@ -18,8 +21,8 @@
         @stop="emitedStop"
       >
         <template v-slot:close-button>
-          <button class="btn btn-dark btn-lg" @click="doClickClose">
-            <i class="bi bi-arrow-left fs-1"></i>
+          <button class="nav-link" @click="doClickClose">
+            <i class="bi bi-arrow-left"></i>
           </button>
         </template>
 
@@ -39,48 +42,108 @@
 
 <script>
 import { defineComponent } from "vue";
-import { ref } from "vue";
+import { ref, reactive } from "vue";
 import PCameraVue from "./PCamera";
+import imageCompression from "browser-image-compression";
 
 const setup = function () {
+  const refImg = ref();
   const refCamera = ref();
 
-  const ui = ref({
+  const ui = reactive({
     show: false,
     camera: null,
   });
 
   const emitedInit = (args) => {
-    ui.value.camera = args.data;
+    ui.camera = args.data;
   };
 
   const emitedPause = () => {};
 
   const emitedStop = () => {
-    ui.value.show = false;
+    ui.show = false;
   };
 
   const doClickClose = (event) => {
     if (event) event.preventDefault();
-    ui.value.show = false;
+    ui.show = false;
     refCamera.value.stop();
   };
 
   const doClickPause = (event) => {
     if (event) event.preventDefault();
 
-    refCamera.value.stop();
+    const component = refCamera.value;
+    const img = refImg.value;
+
+    component.pause().then(() => {
+      /* const imageURL = component.snap();
+      img.src = imageURL; */
+      const camera = ui.camera;
+
+      camera
+        .blob()
+        .then((blob) => {
+          return imageCompression(blob, {
+            maxSizeMB: 0.2,
+            maxWidthOrHeight: 200,
+            useWebWorker: true,
+          }).then((compressedFile) => {
+            return {
+              compressedFile,
+              blob,
+            };
+          });
+        })
+        .then(({ compressedFile, blob }) => {
+          console.log(
+            `file size : original / compressed / ratio : ${(
+              blob.size /
+              1024 /
+              1024
+            ).toFixed(2)} MB / ${(compressedFile.size / 1024 / 1024).toFixed(
+              2
+            )} MB / ${((1 - compressedFile.size / blob.size) * 100).toFixed(
+              2
+            )} % `
+          );
+
+          return new Promise((resolve, reject) => {
+            try {
+              const reader = new FileReader();
+              const handler = () => {
+                reader.removeEventListener("load", handler);
+                resolve(reader);
+              };
+              reader.addEventListener("load", handler);
+
+              reader.readAsDataURL(compressedFile);
+            } catch (err) {
+              reject(err);
+            }
+          });
+        })
+        .then((reader) => {
+          img.src = reader.result;
+        })
+        .catch((err) => console.error(err));
+
+      component.stop();
+    });
   };
 
   const doClickCamera = (event) => {
     if (event) event.preventDefault();
 
-    ui.value.show = true;
+    ui.show = true;
     refCamera.value.start();
   };
 
   return {
+    refImg,
     refCamera,
+
     ui,
 
     emitedInit,

@@ -3,31 +3,48 @@ const DEFAULT = {
     target: ".viewport",
   },
   CONSTRAINS: {
+    audio: false,
     video: {
-      width: 1280,
-      height: 720,
+      width: { min: 160, ideal: 2400, max: 10240 },
+      height: { min: 120, ideal: 1440, max: 4320 },
+      facingMode: "environment",
     },
   },
 };
 
+/**
+ *
+ * @param {String|HTMLElement} target
+ * @param {{audio?:false,video?:MediaTrackConstraints}} constraints
+ * @returns
+ */
 module.exports = (
   target = DEFAULT.DOM.target,
   constraints = DEFAULT.CONSTRAINS
 ) => {
+  constraints.audio = false;
+
+  /**
+   * @type {{
+   * target:string,
+   * viewport:HTMLElement,
+   * video:HTMLVideoElement,
+   * canvas:HTMLCanvasElement
+   * }}
+   */
   const dom = {
     target,
-    /** @type {HTMLElement} */
     viewport: null,
-    /** @type {HTMLVideoElement} */
     video: null,
-    /** @type {HTMLCanvasElement} */
     canvas: null,
   };
 
+  /**
+   *
+   * @param {String | HTMLElement} target
+   */
   const initDom = (target) => {
-    /**
-     * @type {HTMLElement}
-     */
+    /** @type {HTMLElement} */
     let viewport;
 
     if (!target) {
@@ -39,14 +56,14 @@ module.exports = (
     }
 
     // canvas
-    let canvas = viewport.querySelector("canvas");
+    let canvas = viewport.querySelector(":scope>canvas");
     if (!canvas) {
       canvas = viewport.createElement("canvas");
       viewport.appendChild(canvas);
     }
 
     // video
-    let video = viewport.querySelector("video");
+    let video = viewport.querySelector(":scope>video");
     if (!video) {
       video = document.createElement("video");
       viewport.appendChild(video);
@@ -57,20 +74,35 @@ module.exports = (
     dom.video = video;
   };
 
+  const setupDom = (settings) => {
+    const { viewport, canvas } = dom;
+
+    viewport.style.aspectRatio = settings.aspectRatio;
+
+    canvas.width = settings.width;
+    canvas.height = settings.height;
+  };
+
   const media = {
+    constraints: Object.assign(DEFAULT.CONSTRAINS, constraints),
     /** @type {MediaStream} */
     stream: null,
     /** @type {} */
     videoTrack: null,
   };
 
+  /**
+   *
+   * @@param {{audio?:false,video?:MediaTrackConstraints}} constraints
+   * @returns {Promise<MediaStream>}
+   */
   const setupMedia = async (constraints) => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
       media.stream = stream;
 
-      const { video, canvas } = dom;
+      const { video } = dom;
 
       video.srcObject = stream;
 
@@ -79,14 +111,60 @@ module.exports = (
 
         const settings = track.getSettings();
 
-        canvas.width = settings.width;
-        canvas.height = settings.height;
+        console.log(settings);
+
+        setupDom(settings);
       });
 
       return stream;
     } catch (err) {
       return Promise.reject(err);
     }
+  };
+
+  /**
+   *
+   * @param {ConstrainDOMString} aspectRatio
+   * @returns
+   */
+  const applyAspectRatio = async (aspectRatio) => {
+    const constraints = Object.assign(media.constraints, {
+      video: {
+        aspectRatio,
+      },
+    });
+
+    return await setupMedia(constraints);
+  };
+
+  const toggleFacingMode = async () => {
+    const { stream } = media;
+
+    if (stream) {
+      const track = stream.getVideoTracks()[0];
+
+      const settings = track.getSettings();
+
+      if (settings) {
+        let facingMode = settings.facingMode;
+
+        if (facingMode === "user") {
+          facingMode = "environment";
+        } else {
+          facingMode === "user";
+        }
+
+        const constraints = Object.assign(media.constraints, {
+          video: {
+            facingMode,
+          },
+        });
+
+        return await setupMedia(constraints);
+      }
+    }
+
+    return stream;
   };
 
   const drawCanvas = (video, canvas) => {
@@ -107,7 +185,7 @@ module.exports = (
       let { stream } = media;
 
       if (!stream) {
-        stream = await setupMedia(constraints);
+        stream = await setupMedia(media.constraints);
       }
 
       if (stream) {
@@ -166,6 +244,36 @@ module.exports = (
     }
   };
 
+  /**
+   *
+   * @param {"image/png"} [type]
+   * @param {0|1} [quality]
+   * @returns
+   */
+  const blob = async (type, quality) => {
+    const { canvas } = dom;
+
+    return new Promise((resolve, reject) => {
+      try {
+        canvas.toBlob(
+          (blob) => {
+            resolve(blob);
+          },
+          type,
+          quality
+        );
+      } catch (err) {
+        reject(err);
+      }
+    });
+  };
+
+  const snap = () => {
+    const { canvas } = dom;
+
+    return canvas.toDataURL();
+  };
+
   return {
     get DOM() {
       return dom;
@@ -194,6 +302,22 @@ module.exports = (
      */
     async stop() {
       return await stop();
+    },
+
+    async blob() {
+      return await blob();
+    },
+
+    snap() {
+      return snap();
+    },
+
+    async applyAspectRatio(constraints) {
+      return await applyAspectRatio(constraints);
+    },
+
+    async toggleFacingMode(constraints) {
+      return await toggleFacingMode(constraints);
     },
   };
 };

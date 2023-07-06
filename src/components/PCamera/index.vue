@@ -34,7 +34,6 @@ const setup = (props, context) => {
     return camera
       .start()
       .then((stream) => {
-        console.log("start");
         ui.loaded = true;
         context.emit("start", { data: camera });
         return stream;
@@ -68,14 +67,55 @@ const setup = (props, context) => {
     });
   };
 
+  const snap = () => {
+    const camera = refCamera.value.instance;
+
+    return camera.snap();
+  };
+
+  // menus
+  const doClickChangeAspectRatio = (event) => {
+    if (event) event.preventDefault();
+
+    const elem = event.target;
+    const aspect = elem.dataset.aspectRatio;
+
+    const camera = refCamera.value.instance;
+
+    switch (aspect) {
+      case "16/9":
+        camera.applyAspectRatio({ exact: 16 / 9 });
+        break;
+      case "4/3":
+        camera.applyAspectRatio({ exact: 4 / 3 });
+        break;
+      case "1/1":
+        camera.applyAspectRatio({ exact: 1 / 1 });
+        break;
+      default:
+        break;
+    }
+  };
+
+  const doClickFacingMode = (event) => {
+    if (event) event.preventDefault();
+
+    const camera = refCamera.value.instance;
+
+    camera.toggleFacingMode();
+  };
+
   onMounted(() => {
-    const camera = (refCamera.value.instance = generator(".viewport", {
+    const camera = generator(".viewport", {
       video: {
-        width: { min: 160, ideal: 1200, max: 10240 },
-        height: { min: 120, ideal: 720, max: 4320 },
-        facingMode: "environment",
+        width: { min: 160, ideal: 2400, max: 10240 },
+        height: { min: 120, ideal: 1440, max: 4320 },
+        facingMode: { ideal: "environment" },
+        aspectRatio: { ideal: 16 / 9 },
       },
-    }));
+    });
+
+    refCamera.value.instance = camera;
 
     camera.init().then(() => {
       context.emit("init", { data: camera });
@@ -92,6 +132,10 @@ const setup = (props, context) => {
     start,
     pause,
     stop,
+    snap,
+
+    doClickChangeAspectRatio,
+    doClickFacingMode,
   };
 };
 
