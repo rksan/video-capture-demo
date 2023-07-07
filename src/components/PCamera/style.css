@@ -71,7 +71,8 @@
 }
 
 .viewport>>>video,
-.viewport>>>canvas {
+.viewport>>>canvas,
+.viewport>>>canvas.image-buffer {
   display: inline-block;
   position: absolute;
   top: 0;
@@ -80,7 +81,6 @@
 }
 
 .viewport>>>video {
-  visibility: hidden;
   z-index: 1;
 }
 
