@@ -149,12 +149,14 @@ module.exports = (
 
       video.srcObject = stream;
 
-      stream.getVideoTracks().forEach((track) => {
+      stream.getVideoTracks().find((track) => {
         media.videoTrack = track;
 
         const settings = track.getSettings();
 
         setupDom(settings);
+
+        return settings;
       });
 
       return stream;
@@ -163,12 +165,20 @@ module.exports = (
     }
   };
 
-  const applyConstrains = () => {
+  /**
+   * applyConstrains
+   * @param {MediaTrackConstraints} constraints
+   * @returns {MediaTrackConstraints}
+   */
+  const applyConstrains = (constraints) => {
     if (!media.constraints.apply) {
       media.constraints.apply = deepClone(media.constraints.init);
     }
 
-    return media.constraints.apply;
+    if (constraints) {
+      return (media.constraints.apply = deepClone(constraints));
+    }
+    return deepClone(media.constraints.apply);
   };
 
   /**
@@ -183,33 +193,54 @@ module.exports = (
 
     await stop();
 
-    return await setupMedia(constraints);
+    try {
+      const stream = await setupMedia(constraints);
+
+      applyConstrains(constraints);
+
+      return stream;
+    } catch (err) {
+      if (err instanceof OverconstrainedError) {
+        await stop();
+        return await setupMedia(constraints);
+      } else {
+        throw err;
+      }
+    }
   };
 
   const toggleFacingMode = async () => {
     const { stream } = media;
 
     if (stream) {
-      const track = stream.getVideoTracks()[0];
-
-      const settings = track.getSettings();
+      const settings = stream
+        .getVideoTracks()
+        .find((track) => track.getSettings());
 
       if (settings) {
-        let facingMode = settings.facingMode;
-
-        if (facingMode === "user") {
-          facingMode = "environment";
-        } else {
-          facingMode === "user";
-        }
+        const facingMode =
+          settings.facingMode === "user" ? "environment" : "user";
 
         const constraints = applyConstrains();
 
-        constraints.video.facingMode = { ideal: facingMode };
+        constraints.video.facingMode = { exact: facingMode };
 
         await stop();
 
-        return await setupMedia(constraints);
+        try {
+          const stream = await setupMedia(constraints);
+
+          applyConstrains(constraints);
+
+          return stream;
+        } catch (err) {
+          if (err instanceof OverconstrainedError) {
+            await stop();
+            return await setupMedia(media.constraints.init);
+          } else {
+            throw err;
+          }
+        }
       }
     }
 
