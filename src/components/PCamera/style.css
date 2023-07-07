@@ -80,6 +80,9 @@
   width: 100%;
 }
 
+.viewport>>>canvas.image-buffer{
+  visibility: hidden;
+}
 .viewport>>>video {
   z-index: 1;
 }
