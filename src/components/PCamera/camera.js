@@ -1,13 +1,27 @@
+/**
+ * deepClone
+ * @alias structuredClone
+ * @see https://developer.mozilla.org/ja/docs/Web/API/structuredClone
+ */
+const deepClone = structuredClone;
+
+const merge = require("lodash/merge");
+
 const DEFAULT = {
   DOM: {
     target: ".viewport",
   },
+
   CONSTRAINS: {
+    /** @type {MediaTrackConstraints} */
     audio: false,
+    /** @type {MediaTrackConstraints} */
     video: {
       width: { min: 160, ideal: 2400, max: 10240 },
       height: { min: 120, ideal: 1440, max: 4320 },
       facingMode: "environment",
+      aspectRatio: { ideal: 16 / 9 },
+      frameRate: { min: 1, ideal: 16, max: 30 },
     },
   },
 };
@@ -22,8 +36,6 @@ module.exports = (
   target = DEFAULT.DOM.target,
   constraints = DEFAULT.CONSTRAINS
 ) => {
-  constraints.audio = false;
-
   /**
    * @type {{
    * target:string,
@@ -35,8 +47,33 @@ module.exports = (
   const dom = {
     target,
     viewport: null,
-    video: null,
     canvas: null,
+    video: null,
+    imageBuffer: null,
+  };
+
+  const createDom = (parent, selector, tag, { classes, attrs } = {}) => {
+    let elem = parent.querySelector(selector);
+    if (!elem) {
+      elem = document.createElement(tag);
+      parent.appendChild(elem);
+    }
+
+    if (elem) {
+      if (classes) {
+        if (Array.isArray(classes)) {
+          classes.forEach((cls) => elem.classList.add(cls));
+        } else if (typeof classes === "string") {
+          elem.classList.add(classes);
+        }
+      }
+
+      if (attrs) {
+        Object.entries(attrs).forEach(([key, value]) => (elem[key] = value));
+      }
+    }
+
+    return elem;
   };
 
   /**
@@ -56,36 +93,39 @@ module.exports = (
     }
 
     // canvas
-    let canvas = viewport.querySelector(":scope>canvas");
-    if (!canvas) {
-      canvas = viewport.createElement("canvas");
-      viewport.appendChild(canvas);
-    }
+    let canvas = createDom(viewport, ":scope>canvas", "canvas");
 
     // video
-    let video = viewport.querySelector(":scope>video");
-    if (!video) {
-      video = document.createElement("video");
-      viewport.appendChild(video);
-    }
+    let video = createDom(viewport, ":scope>video", "video", {
+      autoplay: true,
+    });
 
-    dom.viewport = viewport;
-    dom.canvas = canvas;
-    dom.video = video;
+    let imageBuffer = createDom(
+      viewport,
+      ":scope>canvas.image-buffer",
+      "canvas",
+      {
+        classes: "image-buffer",
+      }
+    );
+
+    merge(dom, { viewport, canvas, video, imageBuffer });
   };
 
   const setupDom = (settings) => {
-    const { viewport, canvas } = dom;
+    const { viewport, canvas, imageBuffer } = dom;
 
     viewport.style.aspectRatio = settings.aspectRatio;
 
-    canvas.width = settings.width;
-    canvas.height = settings.height;
+    const size = { width: settings.width, height: settings.height };
+
+    merge(canvas, size);
+    merge(imageBuffer, size);
   };
 
   const media = {
     constraints: {
-      init: Object.assign(DEFAULT.CONSTRAINS, constraints),
+      init: merge(DEFAULT.CONSTRAINS, constraints, { audio: false }),
       apply: null,
     },
     /** @type {MediaStream} */
@@ -125,7 +165,7 @@ module.exports = (
 
   const applyConstrains = () => {
     if (!media.constraints.apply) {
-      media.constraints.apply = structuredClone(media.constraints.init);
+      media.constraints.apply = deepClone(media.constraints.init);
     }
 
     return media.constraints.apply;
@@ -204,7 +244,6 @@ module.exports = (
         stream.getVideoTracks().forEach((track) => {
           track.enabled = true;
         });
-        /* window. */ requestAnimationFrame(progress);
       }
 
       return Promise.resolve(media.stream);
@@ -246,15 +285,6 @@ module.exports = (
     }
   };
 
-  const progress = () => {
-    if (!ui.pause) {
-      const { video, canvas } = dom;
-
-      drawCanvas(video, canvas);
-      setTimeout(/* window. */ requestAnimationFrame(progress), 1000 / 30);
-    }
-  };
-
   /**
    *
    * @param {"image/png"} [type]
@@ -262,11 +292,13 @@ module.exports = (
    * @returns
    */
   const blob = async (type, quality) => {
-    const { canvas } = dom;
+    const { video, imageBuffer } = dom;
+
+    drawCanvas(video, imageBuffer);
 
     return new Promise((resolve, reject) => {
       try {
-        canvas.toBlob(
+        imageBuffer.toBlob(
           (blob) => {
             resolve(blob);
           },
@@ -280,9 +312,11 @@ module.exports = (
   };
 
   const snap = () => {
-    const { canvas } = dom;
+    const { video, imageBuffer } = dom;
 
-    return canvas.toDataURL();
+    drawCanvas(video, imageBuffer);
+
+    return imageBuffer.toDataURL();
   };
 
   return {
