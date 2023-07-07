@@ -130,8 +130,6 @@ module.exports = (
     },
     /** @type {MediaStream} */
     stream: null,
-    /** @type {} */
-    videoTrack: null,
   };
 
   /**
@@ -141,17 +139,14 @@ module.exports = (
    */
   const setupMedia = async (constraints) => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-
-      media.stream = stream;
-
       const { video } = dom;
 
-      video.srcObject = stream;
+      const stream =
+        (video.srcObject =
+        media.stream =
+          await navigator.mediaDevices.getUserMedia(constraints));
 
       stream.getVideoTracks().find((track) => {
-        media.videoTrack = track;
-
         const settings = track.getSettings();
 
         setupDom(settings);
@@ -178,12 +173,13 @@ module.exports = (
     if (constraints) {
       return (media.constraints.apply = deepClone(constraints));
     }
+
     return deepClone(media.constraints.apply);
   };
 
   /**
    *
-   * @param {Number} aspectRatio
+   * @param {Number} aspectRatio 16/9 | 4/3 | 1/1
    * @returns
    */
   const applyAspectRatio = async (aspectRatio) => {
@@ -211,42 +207,45 @@ module.exports = (
 
   const toggleFacingMode = async () => {
     const { stream } = media;
+    if (!stream) return stream;
 
-    if (stream) {
-      const settings = stream
-        .getVideoTracks()
-        .find((track) => track.getSettings());
+    const track = stream.getVideoTracks().find((track) => track);
+    if (!track) return stream;
 
-      if (settings) {
-        const facingMode =
-          settings.facingMode === "user" ? "environment" : "user";
+    const settings = track.getSettings();
+    if (!settings) return stream;
 
-        const constraints = applyConstrains();
+    console.log("toggleFacingMode() settings", settings);
 
-        constraints.video.facingMode = { exact: facingMode };
+    const facingMode = settings.facingMode === "user" ? "environment" : "user";
 
+    const constraints = applyConstrains();
+
+    constraints.video.facingMode = { exact: facingMode };
+
+    await stop();
+
+    try {
+      const stream = await setupMedia(constraints);
+
+      applyConstrains(constraints);
+
+      return stream;
+    } catch (err) {
+      if (err instanceof OverconstrainedError) {
         await stop();
-
-        try {
-          const stream = await setupMedia(constraints);
-
-          applyConstrains(constraints);
-
-          return stream;
-        } catch (err) {
-          if (err instanceof OverconstrainedError) {
-            await stop();
-            return await setupMedia(media.constraints.init);
-          } else {
-            throw err;
-          }
-        }
+        return await setupMedia(media.constraints.init);
+      } else {
+        throw err;
       }
     }
-
-    return stream;
   };
 
+  /**
+   * drawCanvas
+   * @param {HTMLVideoElement} video
+   * @param {HTMLCanvasElement} canvas
+   */
   const drawCanvas = (video, canvas) => {
     const ctx = canvas.getContext("2d");
     const size = { w: Math.floor(canvas.width), h: Math.floor(canvas.height) };
@@ -262,22 +261,23 @@ module.exports = (
 
   const start = async () => {
     try {
-      let { stream } = media;
-
-      if (!stream) {
-        stream = await setupMedia(media.constraints.init);
+      if (!media.stream) {
+        await setupMedia(media.constraints.init);
       }
 
       media.constraints.apply = null;
 
+      const { stream } = media;
+
       if (stream) {
         ui.pause = false;
+
         stream.getVideoTracks().forEach((track) => {
           track.enabled = true;
         });
       }
 
-      return Promise.resolve(media.stream);
+      return Promise.resolve(stream);
     } catch (err) {
       return Promise.reject(err);
     }
@@ -286,6 +286,7 @@ module.exports = (
   const pause = async () => {
     try {
       const { stream } = media;
+
       if (stream) {
         ui.pause = true;
 
@@ -293,6 +294,7 @@ module.exports = (
           track.enabled = false;
         });
       }
+
       return Promise.resolve(stream);
     } catch (err) {
       return Promise.reject(err);
@@ -318,8 +320,8 @@ module.exports = (
 
   /**
    *
-   * @param {"image/png"} [type]
-   * @param {0|1} [quality]
+   * @param {String} [type] image/*
+   * @param {Number} [quality] 0 < quality < 1
    * @returns
    */
   const blob = async (type, quality) => {
