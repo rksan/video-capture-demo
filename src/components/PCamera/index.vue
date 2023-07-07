@@ -16,9 +16,17 @@ const setup = (props, context) => {
   });
 
   const ui = reactive({
+    settings: reactive({
+      aspectRatio: "16/9",
+      facingMode: "",
+    }),
     loaded: false,
     error: "",
   });
+
+  const memorySettings = (name, value) => {
+    ui.settings[name] = value;
+  };
 
   const close = (event) => {
     if (event) event.preventDefault();
@@ -35,6 +43,10 @@ const setup = (props, context) => {
       .start()
       .then((stream) => {
         ui.loaded = true;
+        stream.getVideoTracks().find((track) => {
+          const settings = track.getSettings();
+          memorySettings("facingMode", settings.facingMode);
+        });
         context.emit("start", { data: camera });
         return stream;
       })
@@ -82,19 +94,22 @@ const setup = (props, context) => {
 
     const camera = refCamera.value.instance;
 
-    switch (aspect) {
-      case "16/9":
-        camera.applyAspectRatio(16 / 9);
-        break;
-      case "4/3":
-        camera.applyAspectRatio(4 / 3);
-        break;
-      case "1/1":
-        camera.applyAspectRatio(1 / 1);
-        break;
-      default:
-        break;
-    }
+    (() => {
+      switch (aspect) {
+        case "16/9":
+          return camera.applyAspectRatio(16 / 9);
+        case "4/3":
+          return camera.applyAspectRatio(4 / 3);
+
+        case "1/1":
+          return camera.applyAspectRatio(1 / 1);
+
+        default:
+          return Promise.reject();
+      }
+    })().then(() => {
+      memorySettings("aspectRatio", aspect);
+    });
   };
 
   const doClickFacingMode = (event) => {
@@ -102,7 +117,13 @@ const setup = (props, context) => {
 
     const camera = refCamera.value.instance;
 
-    camera.toggleFacingMode();
+    camera.toggleFacingMode().then((/** @type {MediaStream} */ stream) => {
+      stream.getVideoTracks().find((track) => {
+        const settings = track.getSettings();
+
+        memorySettings("facingMode", settings.facingMode);
+      });
+    });
   };
 
   onMounted(() => {
@@ -128,6 +149,7 @@ const setup = (props, context) => {
 
   return {
     ui,
+
     close,
     start,
     pause,

@@ -180,7 +180,7 @@ module.exports = (
   /**
    *
    * @param {Number} aspectRatio 16/9 | 4/3 | 1/1
-   * @returns
+   * @returns {Promise<MediaStream>}
    */
   const applyAspectRatio = async (aspectRatio) => {
     const constraints = applyConstrains();
@@ -205,6 +205,9 @@ module.exports = (
     }
   };
 
+  /**
+   * @returns {Promise<MediaStream>}
+   */
   const toggleFacingMode = async () => {
     const { stream } = media;
     if (!stream) return stream;
@@ -259,6 +262,9 @@ module.exports = (
     pause: false,
   };
 
+  /**
+   * @returns {Promise<MediaStream>}
+   */
   const start = async () => {
     try {
       if (!media.stream) {
@@ -283,6 +289,9 @@ module.exports = (
     }
   };
 
+  /**
+   * @returns {Promise<MediaStream>}
+   */
   const pause = async () => {
     try {
       const { stream } = media;
@@ -301,6 +310,9 @@ module.exports = (
     }
   };
 
+  /**
+   * @returns {Promise<MediaStream>}
+   */
   const stop = async () => {
     try {
       const { stream } = media;
@@ -371,6 +383,9 @@ module.exports = (
       return await start();
     },
 
+    /**
+     * @returns {Promise<MediaStream|DOMException>}
+     */
     async pause() {
       return await pause();
     },
@@ -390,10 +405,16 @@ module.exports = (
       return snap();
     },
 
+    /**
+     * @returns {Promise<MediaStream>}
+     */
     async applyAspectRatio(constraints) {
       return await applyAspectRatio(constraints);
     },
 
+    /**
+     * @returns {Promise<MediaStream>}
+     */
     async toggleFacingMode(constraints) {
       return await toggleFacingMode(constraints);
     },

@@ -1,7 +1,9 @@
 <div class="wapper">
   <main class="main">
     <section class="camera camera-full">
+      <!-- view port -->
       <div class="viewport">
+        <!-- camera contents -->
         <canvas></canvas>
         <video autoplay playsinline></video>
         <canvas class="image-buffer"></canvas>
@@ -29,7 +31,7 @@
 
     <!-- camera menu -->
     <nav class="camera-menu fixed-top m-0 p-0">
-      <ul class="nav display-1">
+      <ul class="nav display-5">
         <!-- close button-->
         <li class="nav-item">
           <slot name="close-button">
@@ -42,17 +44,21 @@
         <!-- aspect ratio-->
         <li class="nav-item dropdown">
           <button
-            class="nav-link dropdown-toggle"
+            class="nav-link fw-normal"
             data-bs-toggle="dropdown"
             data-bs-display="static"
             role="button"
             aria-expanded="false"
           >
             <i class="bi bi-aspect-ratio"></i>
+            <span
+              class="position-absolute top-50 start-50 translate-middle fs-6"
+              >{{ `${ui.settings.aspectRatio}` }}</span
+            >
           </button>
-          <ul class="dropdown-menu dropdown-menu-lg-end dropdown-menu-dark">
-            <li><p class="dropdown-header fs-5">ascpect ratio</p></li>
-            <li><hr class="dropdown-divider" /></li>
+          <ul
+            class="dropdown-menu dropdown-menu-start dropdown-menu-lg-start dropdown-menu-dark"
+          >
             <li>
               <button
                 class="dropdown-item"
@@ -89,10 +95,8 @@
           </button>
         </li>
       </ul>
-
-      <div></div>
-      <div></div>
     </nav>
+    <!-- /camera menu -->
 
     <section class="fixed-bottom">
       <slot name="start-button">
