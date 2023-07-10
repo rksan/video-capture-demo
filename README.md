@@ -123,4 +123,8 @@ context.drawImage(video, 0, 0, size.width, size.height);
 
 # 参考
 
-[MediaDevices.getUserMedia | MDN](https://developer.mozilla.org/ja/docs/Web/API/MediaDevices/getUserMedia)
+- [MediaDevices.getUserMedia | MDN](https://developer.mozilla.org/ja/docs/Web/API/MediaDevices/getUserMedia)
+- [MediaStream | MDN](https://developer.mozilla.org/ja/docs/Web/API/MediaStream)
+- [MediaStreamTrack | MDN](https://developer.mozilla.org/ja/docs/Web/API/MediaStreamTrack)
+- [MediaTrackConstraints | MDN](https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints)
+- [MediaTrackConstraints#Instance properties of video tracks | MDN](https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks)
