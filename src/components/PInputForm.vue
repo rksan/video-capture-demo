@@ -8,8 +8,20 @@
             Camera
           </button>
         </div>
-        <div>
-          <img ref="refImg" />
+        <div class="d-flex" style="overflow-y: auto">
+          <template v-for="(image, idx) in ui.images" :key="idx">
+            <div>
+              <div
+                class="photo-preview"
+                @click="doClickPhoto"
+                :data-idx="idx"
+                :data-width="image.width"
+                :data-height="image.height"
+                :style="`background-image:url(${image.src})`"
+              ></div>
+              <div>{{ `${image.width} * ${image.height}` }}</div>
+            </div>
+          </template>
         </div>
       </div>
 
@@ -40,19 +52,41 @@
   </div>
 </template>
 
+<style scoped>
+.photo-preview {
+  display: inline-block;
+  min-width: 100px;
+  min-height: 100px;
+  max-width: 100vw;
+  max-height: 100vh;
+  cursor: pointer;
+  background-image: none;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+.photo-show {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+</style>
+
 <script>
 import { defineComponent } from "vue";
 import { ref, reactive } from "vue";
 import PCameraVue from "./PCamera";
-import imageCompression from "browser-image-compression";
+//import imageCompression from "browser-image-compression";
 
 const setup = function () {
-  const refImg = ref();
+  //const refImg = ref();
   const refCamera = ref();
 
   const ui = reactive({
     show: false,
     camera: null,
+    images: reactive([]),
   });
 
   const emitedInit = (args) => {
@@ -75,57 +109,20 @@ const setup = function () {
     if (event) event.preventDefault();
 
     const component = refCamera.value;
-    const img = refImg.value;
 
     component.pause().then(() => {
       const camera = ui.camera;
+      const { imageBuffer } = camera.DOM;
 
-      camera
-        .blob()
-        .then((blob) => {
-          return imageCompression(blob, {
-            maxSizeMB: 0.2,
-            maxWidthOrHeight: 200,
-            useWebWorker: true,
-          }).then((compressedFile) => {
-            return {
-              compressedFile,
-              blob,
-            };
-          });
-        })
-        .then(({ compressedFile, blob }) => {
-          console.log(
-            `file size : original / compressed / ratio : ${(
-              blob.size /
-              1024 /
-              1024
-            ).toFixed(2)} MB / ${(compressedFile.size / 1024 / 1024).toFixed(
-              2
-            )} MB / ${((1 - compressedFile.size / blob.size) * 100).toFixed(
-              2
-            )} % `
-          );
+      camera.snap().then((base64) => {
+        //const div = document.querySelector("div.photo-preview");
 
-          return new Promise((resolve, reject) => {
-            try {
-              const reader = new FileReader();
-              const handler = () => {
-                reader.removeEventListener("load", handler);
-                resolve(reader);
-              };
-              reader.addEventListener("load", handler);
-
-              reader.readAsDataURL(compressedFile);
-            } catch (err) {
-              reject(err);
-            }
-          });
-        })
-        .then((reader) => {
-          img.src = reader.result;
-        })
-        .catch((err) => console.error(err));
+        ui.images.push({
+          src: base64,
+          width: imageBuffer.width,
+          height: imageBuffer.height,
+        });
+      });
 
       component.stop();
     });
@@ -138,8 +135,28 @@ const setup = function () {
     refCamera.value.start();
   };
 
+  /**
+   *
+   * @param {MouseEvent} event
+   */
+  const doClickPhoto = (event) => {
+    if (event) event.preventDefault();
+
+    /** @type {HTMLDivElement} */
+    const div = event.target;
+
+    if (div.classList.toggle("photo-show") === true) {
+      //add
+      div.style.width = `${div.dataset.width}px`;
+      div.style.height = `${div.dataset.height}px`;
+    } else {
+      //remove
+      //add
+      div.style.width = null;
+      div.style.height = null;
+    }
+  };
   return {
-    refImg,
     refCamera,
 
     ui,
@@ -150,6 +167,8 @@ const setup = function () {
     doClickClose,
     doClickPause,
     doClickCamera,
+
+    doClickPhoto,
   };
 };
 

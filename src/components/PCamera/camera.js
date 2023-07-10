@@ -42,6 +42,7 @@ module.exports = (
    * viewport:HTMLElement,
    * video:HTMLVideoElement,
    * canvas:HTMLCanvasElement
+   * imageBuffer:HTMLCanvasElement
    * }}
    */
   const dom = {
@@ -249,7 +250,7 @@ module.exports = (
    * @param {HTMLVideoElement} video
    * @param {HTMLCanvasElement} canvas
    */
-  const drawCanvas = (video, canvas) => {
+  const transferCanvas = (video, canvas) => {
     const ctx = canvas.getContext("2d");
     const size = { w: Math.floor(canvas.width), h: Math.floor(canvas.height) };
 
@@ -339,7 +340,7 @@ module.exports = (
   const blob = async (type, quality) => {
     const { video, imageBuffer } = dom;
 
-    drawCanvas(video, imageBuffer);
+    transferCanvas(video, imageBuffer);
 
     return new Promise((resolve, reject) => {
       try {
@@ -356,10 +357,10 @@ module.exports = (
     });
   };
 
-  const snap = () => {
+  const snap = async () => {
     const { video, imageBuffer } = dom;
 
-    drawCanvas(video, imageBuffer);
+    transferCanvas(video, imageBuffer);
 
     return imageBuffer.toDataURL();
   };
