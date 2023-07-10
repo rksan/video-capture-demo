@@ -54,48 +54,56 @@ const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
 // video に転送
 video.srcObject = mediaStream;
 
-mediaStream.getVideoTracks().find((videoStreamTrack) => {
-  // 有効化
-  track.enabled = false;
+mediaStream
+  .getVideoTracks()
+  .find((/** @type {MediaStreamTrack} */ videoStreamTrack) => {
+    // 有効化
+    videoStreamTrack.enabled = false;
 
-  // 実際に取得された VideoStream の設定内容
-  const settings = track.getSettings();
+    // 実際に取得された VideoStream の設定内容
+    const settings = videoStreamTrack.getSettings();
 
-  // dom の setup 等
-  imageBuffer.width = setting.width;
-  imageBuffer.height = setting.height;
-});
+    // dom の setup 等
+    imageBuffer.width = setting.width;
+    imageBuffer.height = setting.height;
+  });
 ```
 
 ### VideoStream の 一時停止
 
 ```javascript
-mediaStream.getVideoTracks().forEach((videoStreamTrack) => {
-  // 無効化
-  videoStreamTrack.enabled = false;
-});
+mediaStream
+  .getVideoTracks()
+  .forEach((/** @type {MediaStreamTrack} */ videoStreamTrack) => {
+    // 無効化
+    videoStreamTrack.enabled = false;
+  });
 ```
 
 ### VideoStream の 終了
 
 ```javascript
-mediaStream.getVideoTracks().forEach((videoStreamTrack) => {
-  // 有効化
-  videoStreamTrack.enabled = true;
+mediaStream
+  .getVideoTracks()
+  .forEach((/** @type {MediaStreamTrack} */ videoStreamTrack) => {
+    // 有効化
+    videoStreamTrack.enabled = true;
 
-  // 停止
-  videoStreamTrack.stop();
-});
+    // 停止
+    videoStreamTrack.stop();
+  });
 ```
 
 ### VideoStream の キャプチャ
 
 ```javascript
 // VideoStream を一時停止
-mediaStream.getVideoTracks().forEach((videoStreamTrack) => {
-  // 無効化
-  videoStreamTrack.enabled = false;
-});
+mediaStream
+  .getVideoTracks()
+  .forEach((/** @type {MediaStreamTrack} */ videoStreamTrack) => {
+    // 無効化
+    videoStreamTrack.enabled = false;
+  });
 
 // canvas 要素
 const context = imageBuffer.getContext("2d");
