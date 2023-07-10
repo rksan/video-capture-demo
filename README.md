@@ -106,9 +106,11 @@ mediaStream
   });
 
 // canvas 要素
+/** @type {CanvasRenderingContext2D} */
 const context = imageBuffer.getContext("2d");
 
 // canvas のサイズ
+/** @type {Object} */
 const size = {
   width: Math.floor(imageBuffer.width),
   height: Math.floor(imageBuffer.height),
@@ -123,8 +125,16 @@ context.drawImage(video, 0, 0, size.width, size.height);
 
 # 参考
 
+## UserMedia
+
 - [MediaDevices.getUserMedia | MDN](https://developer.mozilla.org/ja/docs/Web/API/MediaDevices/getUserMedia)
 - [MediaStream | MDN](https://developer.mozilla.org/ja/docs/Web/API/MediaStream)
 - [MediaStreamTrack | MDN](https://developer.mozilla.org/ja/docs/Web/API/MediaStreamTrack)
 - [MediaTrackConstraints | MDN](https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints)
 - [MediaTrackConstraints#Instance properties of video tracks | MDN](https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks)
+
+## HTMLElement
+
+- [HTMLVideoElement](https://developer.mozilla.org/ja/docs/Web/API/HTMLVideoElement)
+- [HTMLCanvasElement](https://developer.mozilla.org/ja/docs/Web/API/HTMLCanvasElement)
+- [CanvasRenderingContext2D](https://developer.mozilla.org/ja/docs/Web/API/CanvasRenderingContext2D)
