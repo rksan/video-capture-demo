@@ -44,7 +44,7 @@ const routes = [
 
 const BASE_URL = (() => {
   if (process.env.NODE_ENV === "production") {
-    return process.env.BASE_URL + "/input-file-capture-demo";
+    return process.env.BASE_URL + "/video-capture-demo";
   } else {
     return process.env.BASE_URL;
   }
