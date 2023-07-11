@@ -1,16 +1,16 @@
 <template>
   <div class="container-fluid">
     <form>
-      <!-- video canvas -->
       <div>
-        <div>
+        <div class="">
           <button class="btn btn-secondary" @click="doClickCamera">
             Camera
           </button>
         </div>
-        <div class="d-flex" style="overflow-y: auto">
+
+        <div class="row row-cols-auto" style="overflow-x: auto">
           <template v-for="(image, idx) in ui.images" :key="idx">
-            <div>
+            <div class="col">
               <div
                 class="photo-preview"
                 @click="doClickPhoto"
@@ -18,7 +18,12 @@
                 :data-width="image.width"
                 :data-height="image.height"
                 :style="`background-image:url(${image.src})`"
-              ></div>
+              >
+                <div
+                  class="photo-show d-none"
+                  :style="`background-image:url(${image.src}); width:${image.width}px; height:${image.height}px;`"
+                ></div>
+              </div>
               <div>{{ `${image.width} * ${image.height}` }}</div>
             </div>
           </template>
@@ -55,8 +60,8 @@
 <style scoped>
 .photo-preview {
   display: inline-block;
-  min-width: 100px;
-  min-height: 100px;
+  min-width: 64px;
+  min-height: 64px;
   max-width: 100vw;
   max-height: 100vh;
   cursor: pointer;
@@ -142,18 +147,24 @@ const setup = function () {
   const doClickPhoto = (event) => {
     if (event) event.preventDefault();
 
-    /** @type {HTMLDivElement} */
-    const div = event.target;
+    /** @type {HTMLElement} */
+    const target = event.target;
 
-    if (div.classList.toggle("photo-show") === true) {
-      //add
-      div.style.width = `${div.dataset.width}px`;
-      div.style.height = `${div.dataset.height}px`;
+    if (target.tagName.toLowerCase() === "button") {
+      const photo = target.parentElement;
+
+      photo.classList.toggle("d-none");
     } else {
-      //remove
-      //add
-      div.style.width = null;
-      div.style.height = null;
+      const preview = target;
+      const photo = preview.querySelector(":scope>div.photo-show");
+
+      if (photo) {
+        // click preview
+        photo.classList.toggle("d-none");
+      } else {
+        // photo
+        target.classList.toggle("d-none");
+      }
     }
   };
   return {

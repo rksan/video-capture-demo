@@ -298,11 +298,11 @@ module.exports = (
       const { stream } = media;
 
       if (stream) {
-        ui.pause = true;
-
         stream.getVideoTracks().forEach((track) => {
           track.enabled = false;
         });
+
+        ui.pause = true;
       }
 
       return Promise.resolve(stream);
