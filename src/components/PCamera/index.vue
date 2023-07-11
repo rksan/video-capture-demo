@@ -21,7 +21,7 @@ const setup = (props, context) => {
       facingMode: "",
     }),
     loaded: false,
-    state: "",
+    state: ref(""),
     error: "",
   });
 
@@ -29,11 +29,22 @@ const setup = (props, context) => {
     ui.settings[name] = value;
   };
 
+  // computed
   const compCoverShow = computed(() => {
-    if (ui.state === "paused") {
+    if (ui.state === "pausing" || ui.state === "paused") {
       return true;
     } else {
       return !ui.loaded;
+    }
+  });
+
+  const compDisplayMessage = computed(() => {
+    if (ui.state === "pausing" || ui.state === "paused") {
+      return "ビデオをキャプチャ中...";
+    } else if (ui.state === "stoping") {
+      return "ビデオを停止中...";
+    } else {
+      return "カメラ権限を確認中...";
     }
   });
 
@@ -47,19 +58,20 @@ const setup = (props, context) => {
   const start = (event) => {
     if (event) event.preventDefault();
 
+    ui.state = "starting";
+
     const camera = refCamera.value.instance;
 
     return camera
       .start()
       .then((stream) => {
-        ui.loaded = true;
-
         stream.getVideoTracks().find((track) => {
           const settings = track.getSettings();
           memorySettings("facingMode", settings.facingMode);
         });
 
         ui.state = "started";
+        ui.loaded = true;
 
         context.emit("start", { data: camera });
         return stream;
@@ -73,10 +85,15 @@ const setup = (props, context) => {
 
   const pause = (event) => {
     if (event) event.preventDefault();
+    ui.state = "pausing";
+
     const camera = refCamera.value.instance;
+
     return camera.pause().then((stream) => {
       ui.state = "paused";
+
       context.emit("pause", { data: camera });
+
       return stream;
     });
   };
@@ -84,13 +101,16 @@ const setup = (props, context) => {
   const stop = (event) => {
     if (event) event.preventDefault();
 
-    ui.loaded = false;
+    ui.state = "stoping";
 
     const camera = refCamera.value.instance;
 
     return camera.stop().then((stream) => {
       ui.state = "stoped";
+      ui.loaded = false;
+
       context.emit("stop", { data: camera });
+
       return stream;
     });
   };
@@ -143,6 +163,8 @@ const setup = (props, context) => {
   };
 
   onMounted(() => {
+    ui.state = "initializing";
+
     const camera = generator(".viewport", {
       video: {
         width: { min: 160, ideal: 2400, max: 10240 },
@@ -155,7 +177,7 @@ const setup = (props, context) => {
     refCamera.value.instance = camera;
 
     camera.init().then(() => {
-      ui.state = "inited";
+      ui.state = "initialized";
       context.emit("init", { data: camera });
     });
   });
@@ -168,6 +190,7 @@ const setup = (props, context) => {
     ui,
 
     compCoverShow,
+    compDisplayMessage,
 
     close,
     start,

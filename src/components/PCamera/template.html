@@ -25,15 +25,7 @@
           >
             <span class="visually-hidden">Loading...</span>
           </div>
-          <template v-if="ui.state === 'paused'">
-            <p>ビデオキャプチャを取得中...</p>
-          </template>
-          <template v-if="ui.state === 'stoped'">
-            <p>ビデオを停止中...</p>
-          </template>
-          <template v-else>
-            <p>カメラの権限を確認中...</p>
-          </template>
+          <p>{{compDisplayMessage}}</p>
         </div>
       </div>
     </section>
