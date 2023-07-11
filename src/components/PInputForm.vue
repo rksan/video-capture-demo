@@ -11,6 +11,7 @@
         <div class="row row-cols-auto" style="overflow-x: auto">
           <template v-for="(image, idx) in ui.images" :key="idx">
             <div class="col">
+              <!-- preview -->
               <div
                 class="photo-preview"
                 @click="doClickPhoto"
@@ -18,13 +19,19 @@
                 :data-width="image.width"
                 :data-height="image.height"
                 :style="`background-image:url(${image.src})`"
-              >
-                <div
-                  class="photo-show d-none"
-                  :style="`background-image:url(${image.src}); width:${image.width}px; height:${image.height}px;`"
-                ></div>
-              </div>
+              ></div>
               <div>{{ `${image.width} * ${image.height}` }}</div>
+              <!-- image -->
+              <div class="photo-show d-none" @click="doClickPhoto">
+                <div class="photo-wapper">
+                  <img
+                    class="photo-image"
+                    :src="`${image.src}`"
+                    :width="image.width"
+                    :height="`${image.height}`"
+                  />
+                </div>
+              </div>
             </div>
           </template>
         </div>
@@ -72,9 +79,33 @@
 }
 .photo-show {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  left: 0;
+  max-width: 100vw;
+  max-height: 100vh;
+  width: 100%;
+  height: auto;
+  cursor: pointer;
+}
+
+.photo-wapper {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: 100%;
+  aspect-ratio: 16/9;
+}
+.photo-image {
+  /* display: block;
+  margin: auto;
+  width: 100%;
+  height: 100%; */
+  display: block;
+  margin: auto;
+  width: 100%;
+  height: 100%;
 }
 </style>
 
@@ -152,24 +183,14 @@ const setup = function () {
     if (event) event.preventDefault();
 
     /** @type {HTMLElement} */
-    const target = event.target;
+    const target = event.currentTarget;
 
-    if (target.tagName.toLowerCase() === "button") {
-      const photo = target.parentElement;
+    const col = target.parentElement;
 
-      photo.classList.toggle("d-none");
-    } else {
-      const preview = target;
-      const photo = preview.querySelector(":scope>div.photo-show");
+    //const preview = target;
+    const photo = col.querySelector(":scope>div.photo-show");
 
-      if (photo) {
-        // click preview
-        photo.classList.toggle("d-none");
-      } else {
-        // photo
-        target.classList.toggle("d-none");
-      }
-    }
+    photo.classList.toggle("d-none");
   };
 
   return {
