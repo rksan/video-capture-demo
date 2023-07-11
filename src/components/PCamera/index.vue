@@ -17,7 +17,7 @@ const setup = (props, context) => {
 
   const ui = reactive({
     settings: reactive({
-      aspectRatio: "16/9",
+      aspectRatio: ref("16/9"),
       facingMode: "",
     }),
     loaded: ref(false),
@@ -26,7 +26,17 @@ const setup = (props, context) => {
   });
 
   const memorySettings = (name, value) => {
-    ui.settings[name] = value;
+    if (name === "aspectRatio") {
+      if (value === 16 / 9) {
+        ui.settings[name] = "16/9";
+      } else if (value === 4 / 3) {
+        ui.settings[name] = "4/3";
+      } else {
+        ui.settings[name] = "1/1";
+      }
+    } else {
+      ui.settings[name] = value;
+    }
   };
 
   // computed
@@ -168,14 +178,19 @@ const setup = (props, context) => {
   onMounted(() => {
     ui.state = "initializing";
 
-    const camera = generator(".viewport", {
-      video: {
-        width: { min: 160, ideal: 2400, max: 10240 },
-        height: { min: 120, ideal: 1440, max: 4320 },
-        facingMode: { ideal: "environment" },
-        aspectRatio: { ideal: 16 / 9 },
+    const camera = generator(
+      ".viewport",
+      {
+        video: {
+          width: { min: 160, ideal: 2400, max: 10240 },
+          height: { min: 120, ideal: 1440, max: 4320 },
+          facingMode: { ideal: "environment" },
+          /* aspectRatio: { ideal: 16 / 9 }, */
+          aspectRatio: { exact: 1 / 1 },
+        },
       },
-    });
+      { grid: 3 }
+    );
 
     refCamera.value.instance = camera;
 

@@ -30,11 +30,13 @@ const DEFAULT = {
  *
  * @param {String|HTMLElement} target
  * @param {{audio?:false,video?:MediaTrackConstraints}} constraints
+ * @param {{grid:number}} [options]
  * @returns
  */
 module.exports = (
   target = DEFAULT.DOM.target,
-  constraints = DEFAULT.CONSTRAINS
+  constraints = DEFAULT.CONSTRAINS,
+  options = { grid: 0 }
 ) => {
   /**
    * @type {{
@@ -124,6 +126,54 @@ module.exports = (
     merge(imageBuffer, size);
   };
 
+  const drawGrid = (grid) => {
+    if (!grid) return;
+
+    const { canvas } = dom;
+
+    const ctx = canvas.getContext("2d");
+
+    const size = {
+      width: Math.floor(canvas.width),
+      height: Math.floor(canvas.height),
+    };
+
+    const distance = {
+      grid: Math.floor(grid),
+      width: size.width / Math.floor(grid),
+      height: size.height / Math.floor(grid),
+    };
+
+    const draw = (grid) => {
+      if (!grid) return;
+
+      ctx.beginPath();
+
+      for (
+        let i = 0, x = distance.width, y = 0;
+        i < 3 - 1;
+        i++, x += distance.width
+      ) {
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, size.height);
+      }
+
+      for (
+        let i = 0, x = 0, y = distance.height;
+        i < 3 - 1;
+        i++, y += distance.height
+      ) {
+        ctx.moveTo(x, y);
+        ctx.lineTo(size.width, y);
+      }
+
+      ctx.strokeStyle = "white";
+      ctx.stroke();
+    };
+
+    draw(distance.grid);
+  };
+
   const media = {
     constraints: {
       init: merge(DEFAULT.CONSTRAINS, constraints, { audio: false }),
@@ -153,6 +203,8 @@ module.exports = (
         const settings = track.getSettings();
 
         setupDom(settings);
+
+        drawGrid(options.grid);
 
         return settings;
       });
