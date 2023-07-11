@@ -23,13 +23,16 @@
               <div>{{ `${image.width} * ${image.height}` }}</div>
               <!-- image -->
               <div class="photo-show d-none" @click="doClickPhoto">
-                <div class="photo-wapper">
-                  <img
-                    class="photo-image"
-                    :src="`${image.src}`"
-                    :width="image.width"
-                    :height="`${image.height}`"
-                  />
+                <div class="photo-cover"></div>
+                <div class="photo-show-container">
+                  <div class="photo-wapper">
+                    <img
+                      class="photo-image"
+                      :src="`${image.src}`"
+                      :width="image.width"
+                      :height="`${image.height}`"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -77,15 +80,33 @@
   background-size: cover;
   background-position: center;
 }
+
 .photo-show {
+  cursor: pointer;
+}
+
+.photo-cover {
   position: absolute;
   top: 0;
   left: 0;
+  min-width: 100%;
+  min-height: 100%;
+  background-color: black;
+  opacity: 0.5;
+}
+.photo-show-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  padding: 0;
   max-width: 100vw;
   max-height: 100vh;
   width: 100%;
   height: auto;
-  cursor: pointer;
+
+  overflow: hidden;
 }
 
 .photo-wapper {
@@ -97,15 +118,21 @@
   height: 100%;
   aspect-ratio: 16/9;
 }
+
+/* height > width */
+@media (orientation: portrait) {
+  .photo {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 9/16;
+  }
+}
+
 .photo-image {
-  /* display: block;
-  margin: auto;
-  width: 100%;
-  height: 100%; */
   display: block;
   margin: auto;
-  width: 100%;
-  height: 100%;
+  max-width: 100%;
+  height: auto;
 }
 </style>
 
@@ -190,7 +217,11 @@ const setup = function () {
     //const preview = target;
     const photo = col.querySelector(":scope>div.photo-show");
 
-    photo.classList.toggle("d-none");
+    if (photo.classList.toggle("d-none")) {
+      // hidden
+    } else {
+      //show
+    }
   };
 
   return {
