@@ -36,7 +36,7 @@
         <!-- close button-->
         <li class="nav-item">
           <slot name="close-button">
-            <button class="nav-link" @click="close">
+            <button class="nav-link" @click="doClickClose">
               <i class="bi bi-x-square"></i>
             </button>
           </slot>
@@ -101,17 +101,17 @@
 
     <section class="fixed-bottom">
       <slot name="start-button">
-        <button class="btn btn-primary" @click="start">
+        <button class="btn btn-primary" @click="doClickstart">
           <i class="bi bi-caret-right-square"></i>
         </button>
       </slot>
       <slot name="pause-button">
-        <button class="btn btn-warning" @click="pause">
+        <button class="btn btn-warning" @click="doClickpause">
           <i class="bi bi-pause-circle"></i>
         </button>
       </slot>
       <slot name="stop-button">
-        <button class="btn btn-danger" @click="stop">
+        <button class="btn btn-danger" @click="doClickstop">
           <i class="bi bi-stop-fill"></i>
         </button>
       </slot>

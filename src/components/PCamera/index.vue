@@ -20,9 +20,9 @@ const setup = (props, context) => {
       aspectRatio: "16/9",
       facingMode: "",
     }),
-    loaded: false,
+    loaded: ref(false),
     state: ref(""),
-    error: "",
+    error: ref(""),
   });
 
   const memorySettings = (name, value) => {
@@ -33,6 +33,10 @@ const setup = (props, context) => {
   const compCoverShow = computed(() => {
     if (ui.state === "pausing" || ui.state === "paused") {
       return true;
+    } else if (ui.state === "stoping") {
+      return true;
+    } else if (ui.state === "stoped") {
+      return false;
     } else {
       return !ui.loaded;
     }
@@ -41,7 +45,7 @@ const setup = (props, context) => {
   const compDisplayMessage = computed(() => {
     if (ui.state === "pausing" || ui.state === "paused") {
       return "ビデオをキャプチャ中...";
-    } else if (ui.state === "stoping") {
+    } else if (ui.state === "stoping" || ui.state === "stoped") {
       return "ビデオを停止中...";
     } else {
       return "カメラ権限を確認中...";
@@ -49,13 +53,13 @@ const setup = (props, context) => {
   });
 
   // events
-  const close = (event) => {
+  const doClickClose = (event) => {
     if (event) event.preventDefault();
 
     $router.back();
   };
 
-  const start = (event) => {
+  const doClickStart = (event) => {
     if (event) event.preventDefault();
 
     ui.state = "starting";
@@ -83,14 +87,18 @@ const setup = (props, context) => {
       });
   };
 
-  const pause = (event) => {
+  const doClickPause = (event) => {
     if (event) event.preventDefault();
     ui.state = "pausing";
 
     const camera = refCamera.value.instance;
 
     return camera.pause().then((stream) => {
-      ui.state = "paused";
+      if (camera.mediaState === "pause") {
+        ui.state = "paused";
+      } else {
+        ui.state = "started";
+      }
 
       context.emit("pause", { data: camera });
 
@@ -98,7 +106,7 @@ const setup = (props, context) => {
     });
   };
 
-  const stop = (event) => {
+  const doClickStop = (event) => {
     if (event) event.preventDefault();
 
     ui.state = "stoping";
@@ -113,12 +121,6 @@ const setup = (props, context) => {
 
       return stream;
     });
-  };
-
-  const snap = () => {
-    const camera = refCamera.value.instance;
-
-    return camera.snap();
   };
 
   // menus
@@ -183,7 +185,7 @@ const setup = (props, context) => {
   });
 
   onUnmounted(() => {
-    stop();
+    doClickStop();
   });
 
   return {
@@ -192,11 +194,10 @@ const setup = (props, context) => {
     compCoverShow,
     compDisplayMessage,
 
-    close,
-    start,
-    pause,
-    stop,
-    snap,
+    doClickClose,
+    doClickStart,
+    doClickPause,
+    doClickStop,
 
     doClickChangeAspectRatio,
     doClickFacingMode,

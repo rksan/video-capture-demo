@@ -89,7 +89,7 @@ const setup = function () {
   const refCamera = ref();
 
   const ui = reactive({
-    show: false,
+    show: ref(false),
     camera: null,
     images: reactive([]),
   });
@@ -107,7 +107,9 @@ const setup = function () {
   const doClickClose = (event) => {
     if (event) event.preventDefault();
     ui.show = false;
-    refCamera.value.stop();
+
+    const component = refCamera.value;
+    component.doClickStop(event);
   };
 
   const doClickPause = (event) => {
@@ -115,29 +117,29 @@ const setup = function () {
 
     const component = refCamera.value;
 
-    component.pause().then(() => {
-      const camera = ui.camera;
-      const { imageBuffer } = camera.DOM;
+    const camera = ui.camera;
 
-      camera.snap().then((base64) => {
-        //const div = document.querySelector("div.photo-preview");
+    camera.snap();
 
-        ui.images.push({
-          src: base64,
-          width: imageBuffer.width,
-          height: imageBuffer.height,
-        });
-      });
+    const { imageBuffer } = camera.DOM;
+    const base64 = camera.dataURL();
 
-      component.stop();
+    ui.images.push({
+      src: base64,
+      width: imageBuffer.width,
+      height: imageBuffer.height,
     });
+
+    component.doClickStop();
   };
 
   const doClickCamera = (event) => {
     if (event) event.preventDefault();
 
     ui.show = true;
-    refCamera.value.start();
+
+    const component = refCamera.value;
+    component.doClickStart(event);
   };
 
   /**
@@ -167,6 +169,7 @@ const setup = function () {
       }
     }
   };
+
   return {
     refCamera,
 

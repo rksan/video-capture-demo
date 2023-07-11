@@ -131,6 +131,8 @@ module.exports = (
     },
     /** @type {MediaStream} */
     stream: null,
+    /** @type {"init"|"start"|"pause"|"stop"} */
+    state: "",
   };
 
   /**
@@ -259,6 +261,13 @@ module.exports = (
     ctx.drawImage(video, 0, 0, size.w, size.h);
   };
 
+  const clearCanvas = (canvas) => {
+    const ctx = canvas.getContext("2d");
+    const size = { w: Math.floor(canvas.width), h: Math.floor(canvas.height) };
+
+    ctx.clearRect(0, 0, size.w, size.h);
+  };
+
   const ui = {
     pause: false,
   };
@@ -282,6 +291,8 @@ module.exports = (
         stream.getVideoTracks().forEach((track) => {
           track.enabled = true;
         });
+
+        media.state = "start";
       }
 
       return Promise.resolve(stream);
@@ -291,18 +302,30 @@ module.exports = (
   };
 
   /**
+   * @param {(enabled)=>void} [before]
    * @returns {Promise<MediaStream>}
    */
-  const pause = async () => {
+  const pause = async (before) => {
     try {
       const { stream } = media;
 
       if (stream) {
+        let enabled = false;
+
         stream.getVideoTracks().forEach((track) => {
-          track.enabled = false;
+          if (typeof before === "function") before(track.enabled);
+
+          enabled = !track.enabled;
+          track.enabled = enabled;
         });
 
-        ui.pause = true;
+        ui.pause = enabled;
+
+        if (enabled) {
+          media.state = "start";
+        } else {
+          media.state = "pause";
+        }
       }
 
       return Promise.resolve(stream);
@@ -319,11 +342,14 @@ module.exports = (
       const { stream } = media;
       if (stream) {
         stream.getTracks().forEach((track) => {
+          const { imageBuffer } = dom;
+          clearCanvas(imageBuffer);
           track.enabled = true;
           track.stop();
         });
         media.stream = null;
         ui.pause = false;
+        media.state = "stop";
       }
       return Promise.resolve(stream);
     } catch (err) {
@@ -338,9 +364,7 @@ module.exports = (
    * @returns
    */
   const blob = async (type, quality) => {
-    const { video, imageBuffer } = dom;
-
-    transferCanvas(video, imageBuffer);
+    const { imageBuffer } = dom;
 
     return new Promise((resolve, reject) => {
       try {
@@ -357,17 +381,33 @@ module.exports = (
     });
   };
 
+  /**
+   *
+   * @param {String} [type] image/*
+   * @param {Number} [quality] 0 < quality < 1
+   * @returns
+   */
+  const dataURL = (type, quality) => {
+    const { imageBuffer } = dom;
+
+    return imageBuffer.toDataURL(type, quality);
+  };
+
   const snap = async () => {
     const { video, imageBuffer } = dom;
 
     transferCanvas(video, imageBuffer);
 
-    return imageBuffer.toDataURL();
+    return;
   };
 
   return {
     get DOM() {
       return dom;
+    },
+
+    get mediaState() {
+      return media.state;
     },
 
     async init() {
@@ -400,6 +440,10 @@ module.exports = (
 
     async blob() {
       return await blob();
+    },
+
+    dataURL() {
+      return dataURL();
     },
 
     snap() {

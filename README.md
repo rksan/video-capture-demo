@@ -97,14 +97,6 @@ mediaStream
 ### VideoStream の キャプチャ
 
 ```javascript
-// VideoStream を一時停止
-mediaStream
-  .getVideoTracks()
-  .forEach((/** @type {MediaStreamTrack} */ videoStreamTrack) => {
-    // 無効化
-    videoStreamTrack.enabled = false;
-  });
-
 // canvas 要素
 /** @type {CanvasRenderingContext2D} */
 const context = imageBuffer.getContext("2d");
@@ -121,6 +113,14 @@ context.clearRect(0, 0, size.width, size.height);
 
 // 停止中のvideoをcanvasに転写
 context.drawImage(video, 0, 0, size.width, size.height);
+
+// VideoStream を一時停止 もしくは 停止
+mediaStream
+  .getVideoTracks()
+  .forEach((/** @type {MediaStreamTrack} */ videoStreamTrack) => {
+    // 無効化
+    videoStreamTrack.enabled = false;
+  });
 ```
 
 # 参考
