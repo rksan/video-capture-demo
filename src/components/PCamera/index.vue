@@ -4,7 +4,7 @@
 
 <script>
 import { defineComponent } from "vue";
-import { onMounted, onUnmounted, ref, reactive } from "vue";
+import { onMounted, onUnmounted, ref, reactive, computed } from "vue";
 import { useRouter } from "vue-router";
 import generator from "./camera";
 
@@ -21,6 +21,7 @@ const setup = (props, context) => {
       facingMode: "",
     }),
     loaded: false,
+    state: "",
     error: "",
   });
 
@@ -28,6 +29,15 @@ const setup = (props, context) => {
     ui.settings[name] = value;
   };
 
+  const compCoverShow = computed(() => {
+    if (ui.state === "paused") {
+      return true;
+    } else {
+      return !ui.loaded;
+    }
+  });
+
+  // events
   const close = (event) => {
     if (event) event.preventDefault();
 
@@ -43,10 +53,14 @@ const setup = (props, context) => {
       .start()
       .then((stream) => {
         ui.loaded = true;
+
         stream.getVideoTracks().find((track) => {
           const settings = track.getSettings();
           memorySettings("facingMode", settings.facingMode);
         });
+
+        ui.state = "started";
+
         context.emit("start", { data: camera });
         return stream;
       })
@@ -61,6 +75,7 @@ const setup = (props, context) => {
     if (event) event.preventDefault();
     const camera = refCamera.value.instance;
     return camera.pause().then((stream) => {
+      ui.state = "paused";
       context.emit("pause", { data: camera });
       return stream;
     });
@@ -74,6 +89,7 @@ const setup = (props, context) => {
     const camera = refCamera.value.instance;
 
     return camera.stop().then((stream) => {
+      ui.state = "stoped";
       context.emit("stop", { data: camera });
       return stream;
     });
@@ -139,6 +155,7 @@ const setup = (props, context) => {
     refCamera.value.instance = camera;
 
     camera.init().then(() => {
+      ui.state = "inited";
       context.emit("init", { data: camera });
     });
   });
@@ -149,6 +166,8 @@ const setup = (props, context) => {
 
   return {
     ui,
+
+    compCoverShow,
 
     close,
     start,

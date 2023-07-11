@@ -10,11 +10,12 @@
       </div>
     </section>
 
-    <section class="cover" :class="ui.loaded ? '' : 'cover-loading'">
+    <!-- cover-->
+    <section class="cover" :class="compCoverShow ? 'cover-loading' : ''">
       <div
         class="position-relative"
         style="width: 100%; height: 100%"
-        v-show="!ui.loaded"
+        v-show="compCoverShow"
       >
         <div class="position-absolute top-50 start-50 translate-middle">
           <div
@@ -24,7 +25,15 @@
           >
             <span class="visually-hidden">Loading...</span>
           </div>
-          <p>カメラの権限を確認中...</p>
+          <template v-if="ui.state === 'paused'">
+            <p>ビデオキャプチャを取得中...</p>
+          </template>
+          <template v-if="ui.state === 'stoped'">
+            <p>ビデオを停止中...</p>
+          </template>
+          <template v-else>
+            <p>カメラの権限を確認中...</p>
+          </template>
         </div>
       </div>
     </section>
