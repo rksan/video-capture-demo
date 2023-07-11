@@ -117,6 +117,8 @@ const setup = function () {
 
     const component = refCamera.value;
 
+    component.setState("pausing");
+
     const camera = ui.camera;
 
     camera.snap();

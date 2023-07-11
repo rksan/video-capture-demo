@@ -30,6 +30,7 @@ const setup = (props, context) => {
   };
 
   // computed
+
   const compCoverShow = computed(() => {
     if (ui.state === "pausing" || ui.state === "paused") {
       return true;
@@ -193,6 +194,10 @@ const setup = (props, context) => {
 
     compCoverShow,
     compDisplayMessage,
+
+    setState(state) {
+      ui.state = state;
+    },
 
     doClickClose,
     doClickStart,
